@@ -13,7 +13,7 @@ double A = salario * 0.50;
 double B = salario * 0.30;
 double C = salario * 0.20;
 
-cout << fixed << setprecision(2); // para que los tres valores salgan siempre con 4 decimales
+cout << fixed << setprecision(2); // para que los tres valores salgan siempre con 2 decimales
 cout << "Así quedaría la regla: " 
      << "Necesidades (50%): " << A << endl 
      << "Ocio (30%): " << B << endl 
