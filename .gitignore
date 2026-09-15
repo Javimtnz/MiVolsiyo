@@ -1,0 +1,46 @@
+# Archivos compilados
+*.o
+*.obj
+*.out
+*.exe
+*.app
+*.dSYM/
+
+# Archivos binarios sin extensión (ejecutables generados típicos en C++)
+# Ojo: esto puede ignorar carpetas de práctica sin extensión, revisa antes de usarlo
+# *.[^.]*
+
+# Carpetas de build
+build/
+bin/
+obj/
+Debug/
+Release/
+
+# VS Code
+.vscode/ipch/
+.vscode/*.log
+*.code-workspace
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# CMake (por si en algún momento lo usas)
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Logs y temporales
+*.log
+*.tmp
+*.swp
