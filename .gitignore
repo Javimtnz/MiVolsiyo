@@ -20,6 +20,7 @@ Release/
 # VS Code
 .vscode/ipch/
 .vscode/*.log
+.vscode/
 *.code-workspace
 
 # macOS
