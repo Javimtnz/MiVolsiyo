@@ -35,5 +35,5 @@ llegar a 1.0.0.
 
 |  Include   |  Tipo   | Notas |
 | --- | --- | --- |
-|  `<windows.h>`   |  SDK de Windows (siempre presente en Windows)   |  |
+|  `<windows.h>`   |  SDK de Windows (siempre presente en Windows)   | Windows-only |
 |  `json.hpp`   |  Librería de terceros ([nlohmann/json](https://github.com/nlohmann/json))  | Header-only; no incluida en el repo, hay que descargarla manualmente antes de compilar |
