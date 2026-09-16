@@ -1,5 +1,8 @@
 {
-    "Necesidades": 0.40,
+    "_comment_necesidades":"Formato decimal (0.50 = 50%)",
+    "Necesidades": 0.50,
+    "_comment_ocio":"Formato decimal (0.30 = 30%)",
     "Ocio": 0.30,
-    "Ahorro": 0.30
+    "_comment_ahorro":"Formato decimal (0.20 = 20%)",
+    "Ahorro": 0.20
 }
