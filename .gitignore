@@ -47,5 +47,4 @@ Makefile
 *.swp
 
 # librerías y archivos
-
 json.hpp
