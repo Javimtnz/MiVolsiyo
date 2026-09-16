@@ -27,7 +27,7 @@ int main(){
         return 1;
     }
 
- // 2. Extraer los porcentajes del JSON
+ // 3. Extraer los porcentajes del JSON
     double necesidades = datos["Necesidades"];
     double ocio        = datos["Ocio"];
     double ahorro       = datos["Ahorro"];

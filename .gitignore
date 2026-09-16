@@ -46,6 +46,6 @@ Makefile
 *.tmp
 *.swp
 
-librerías
+# librerías y archivos
 
 .json.hpp
