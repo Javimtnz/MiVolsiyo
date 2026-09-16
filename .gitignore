@@ -48,4 +48,4 @@ Makefile
 
 # librerías y archivos
 
-.json.hpp
+json.hpp
