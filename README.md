@@ -33,6 +33,7 @@ En el [CHANGELOG](CHANGELOG.md) puede ver los cambios más detallados entre vers
 
 ---
 ## Instalación
+
 >[!warning] **Solo windows.** El programa usa `windows.h`, por lo que no compila en Linux ni en macOS. 
 
 ### 1. Instalar el compilador
