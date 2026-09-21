@@ -1,12 +1,11 @@
 #include <iostream>
 #include <iomanip> // para usa setprecision
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include <fstream>
 #include <windows.h>
 
 using namespace std;
 using json = nlohmann::json;
-     
 
 int main(){
      SetConsoleOutputCP(CP_UTF8);
