@@ -8,6 +8,7 @@ Todos los cambios relevantes de MiVolsiyo se documentan en este archivo. El form
 - Almacenar el salario mensual localmente.
 - Registrar carteras de inversión.
 - Llevar seguimiento de activos y pasivos.
+- Implementar un GUI mínimo e intuitivo.
 
 ## [0.0.0] — 15-09-2026
 
