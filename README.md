@@ -40,6 +40,7 @@ En el [CHANGELOG](CHANGELOG.md) puede ver los cambios más detallados entre vers
 1. Instala [MSYS2](https://www.msys2.org/) con su instalador.
 2. En el menú de inicio de Windows busca **MSYS2 UCRT64**.
 3. instala g++:
+
 ```bash
 pacman -S mingw-w64-ucrt-x86_64-gcc
 ```
