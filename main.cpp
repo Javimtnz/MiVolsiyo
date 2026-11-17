@@ -25,9 +25,14 @@ fs::path carpetaDelEjecutable() {
     return fs::path(ruta).parent_path();
 }
 
+// El 100 % expresado en puntos básicos (1 punto básico = 0,01 %).
+const long long CIEN_POR_CIEN = 10000;
+
 // Comprobamos la clave y el tipo antes de convertir, en vez de dejar que
 // nlohmann lance type_error: así el mensaje dice exactamente qué clave falla.
-optional<double> leerPorcentaje(const json& datos, const string& clave) {
+// Devuelve el porcentaje en puntos básicos (0.50 -> 5000) para poder sumar y
+// repartir con enteros exactos: sumando double, 0.6 + 0.3 + 0.1 no da 1.
+optional<long long> leerPorcentaje(const json& datos, const string& clave) {
     if (!datos.contains(clave)) {
         cerr << "Error: falta la clave \"" << clave << "\" en regla-settings.json" << endl;
         return nullopt;
@@ -42,7 +47,15 @@ optional<double> leerPorcentaje(const json& datos, const string& clave) {
         cerr << "Error: \"" << clave << "\" debe estar entre 0 y 1 (0.50 = 50%), no " << porcentaje << endl;
         return nullopt;
     }
-    return porcentaje;
+    double enPuntosBasicos = porcentaje * CIEN_POR_CIEN;
+    long long puntosBasicos = llround(enPuntosBasicos);
+    // El margen absorbe el error de representación del double (0.29 * 10000 = 2899.9999...);
+    // por encima de él es que el porcentaje tiene más decimales de los admitidos.
+    if (fabs(enPuntosBasicos - puntosBasicos) > 1e-6) {
+        cerr << "Error: \"" << clave << "\" admite como mucho 4 decimales (0.1234 = 12,34%), no " << valor.dump() << endl;
+        return nullopt;
+    }
+    return puntosBasicos;
 }
 
 // Convierte "1175.25" o "1175,25" en 117525 céntimos leyendo los dígitos uno a uno,
@@ -132,10 +145,17 @@ int main(){
     }
 
  // 3. Extraer los porcentajes del JSON
-    optional<double> necesidades = leerPorcentaje(datos, "Necesidades");
-    optional<double> ocio        = leerPorcentaje(datos, "Ocio");
-    optional<double> ahorro      = leerPorcentaje(datos, "Ahorro");
+    optional<long long> necesidades = leerPorcentaje(datos, "Necesidades");
+    optional<long long> ocio        = leerPorcentaje(datos, "Ocio");
+    optional<long long> ahorro      = leerPorcentaje(datos, "Ahorro");
     if (!necesidades || !ocio || !ahorro) {
+        return 1;
+    }
+    long long suma = *necesidades + *ocio + *ahorro;
+    if (suma != CIEN_POR_CIEN) {
+        cerr << "Error: los porcentajes de regla-settings.json suman "
+             << suma / 100 << '.' << setw(2) << setfill('0') << suma % 100
+             << "% y deben sumar 100%" << endl;
         return 1;
     }
 
@@ -148,9 +168,9 @@ int main(){
 
 // 5. Repartir. El porcentaje es decimal, así que se redondea una sola vez
 //    al céntimo más cercano y a partir de ahí todo son enteros exactos.
-    long long A = llround(*salario * *necesidades);
-    long long B = llround(*salario * *ocio);
-    long long C = llround(*salario * *ahorro);
+    long long A = llround(*salario * (*necesidades / double(CIEN_POR_CIEN)));
+    long long B = llround(*salario * (*ocio / double(CIEN_POR_CIEN)));
+    long long C = llround(*salario * (*ahorro / double(CIEN_POR_CIEN)));
 
 cout << "Así quedaría la regla: "
      << "Necesidades: " << formatearEuros(A) << "€" << endl
