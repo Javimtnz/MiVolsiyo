@@ -1,9 +1,11 @@
 #include <iostream>
-#include <iomanip> // para usa setprecision
+#include <iomanip> // para setw y setfill
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <optional>
 #include <string>
+#include <sstream>
+#include <cmath>   // para llround
 #include <windows.h>
 
 using namespace std;
@@ -27,6 +29,64 @@ optional<double> leerPorcentaje(const json& datos, const string& clave) {
         return nullopt;
     }
     return porcentaje;
+}
+
+// Convierte "1175.25" o "1175,25" en 117525 céntimos leyendo los dígitos uno a uno,
+// sin pasar por double: así el importe es exacto. Si el texto no es un importe
+// válido (letras, signo, más de 2 decimales...) devuelve nullopt.
+optional<long long> textoACentimos(const string& texto) {
+    size_t inicio = texto.find_first_not_of(" \t\r");
+    if (inicio == string::npos) return nullopt; // línea vacía
+    size_t fin = texto.find_last_not_of(" \t\r");
+
+    long long euros = 0;
+    long long centimos = 0;
+    int decimales = -1; // -1 = todavía no ha aparecido el punto o la coma
+    bool hayDigitos = false;
+
+    for (size_t i = inicio; i <= fin; ++i) {
+        char c = texto[i];
+        if (c == '.' || c == ',') {
+            if (decimales != -1) return nullopt; // dos separadores, ej. "1.175,25"
+            decimales = 0;
+        } else if (c >= '0' && c <= '9') {
+            hayDigitos = true;
+            if (decimales == -1) {
+                if (euros > 1000000000000LL) return nullopt; // evita desbordar long long
+                euros = euros * 10 + (c - '0');
+            } else {
+                if (decimales == 2) return nullopt; // no existen fracciones de céntimo
+                centimos = centimos * 10 + (c - '0');
+                ++decimales;
+            }
+        } else {
+            return nullopt;
+        }
+    }
+    if (!hayDigitos) return nullopt;
+    if (decimales == 1) centimos *= 10; // "12.5" son 50 céntimos, no 5
+    return euros * 100 + centimos;
+}
+
+// Pregunta hasta recibir un importe válido mayor que 0.
+// Devuelve nullopt si se acaba la entrada (Ctrl+Z o entrada redirigida vacía),
+// para no quedarse preguntando en bucle para siempre.
+optional<long long> pedirSalarioEnCentimos() {
+    string linea;
+    while (true) {
+        cout << "Inserte salario (ej. 1175.25 o 1175,25): ";
+        if (!getline(cin, linea)) return nullopt;
+        optional<long long> centimos = textoACentimos(linea);
+        if (centimos && *centimos > 0) return centimos;
+        cout << "Importe no válido: usa solo números, hasta 2 decimales y mayor que 0." << endl;
+    }
+}
+
+// 117525 -> "1175.25"
+string formatearEuros(long long centimos) {
+    ostringstream salida;
+    salida << centimos / 100 << '.' << setw(2) << setfill('0') << centimos % 100;
+    return salida.str();
 }
 
 int main(){
@@ -63,19 +123,23 @@ int main(){
         return 1;
     }
 
-double salario;
-cout << "Inserte salario (usa punto, ej. 1175.25): ";
-cin >> salario;
+// 4. Pedir el salario, ya en céntimos enteros
+    optional<long long> salario = pedirSalarioEnCentimos();
+    if (!salario) {
+        cerr << endl << "Error: no se recibió ningún salario." << endl;
+        return 1;
+    }
 
-     double A = salario * *necesidades;
-     double B = salario * *ocio;
-     double C = salario * *ahorro;
+// 5. Repartir. El porcentaje es decimal, así que se redondea una sola vez
+//    al céntimo más cercano y a partir de ahí todo son enteros exactos.
+    long long A = llround(*salario * *necesidades);
+    long long B = llround(*salario * *ocio);
+    long long C = llround(*salario * *ahorro);
 
-cout << fixed << setprecision(2); // para que los tres valores salgan siempre con 2 decimales
 cout << "Así quedaría la regla: "
-     << "Necesidades: " << A << "€" << endl
-     << "Ocio: " << B << "€" << endl
-     << "Ahorro e invesión: " << C << "€" << endl;
+     << "Necesidades: " << formatearEuros(A) << "€" << endl
+     << "Ocio: " << formatearEuros(B) << "€" << endl
+     << "Ahorro e inversión: " << formatearEuros(C) << "€" << endl;
 
      return 0;
 }
