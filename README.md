@@ -142,6 +142,29 @@ El programa busca `config/regla-settings.json` junto a `main.exe`, así que func
 - Archivo extra que suma al set que se ha de distribuir.
 - Tienes que tener una dependencia externa o sino no te funcionará el programa. 
 
+### Dinero en céntimos enteros en lugar de decimales
+
+**Decisión:** Los importes se guardan y se calculan en céntimos con números enteros (`1175,25 €` → `117525`) y solo se convierten a euros para mostrarlos.
+
+**Motivos:**
+- MiVolsiyo va a ser una app de finanzas personales: cualquier fallo en el cálculo, aunque sea de unos céntimos, obliga a mover cantidades ínfimas para cuadrar las cuentas, y eso hace perder el tiempo.
+
+**Contrapartidas:**
+- Hay que convertir el importe al leerlo y al mostrarlo.
+- Al repartir por porcentajes todavía se puede descuadrar 1 céntimo, porque cada parte se redondea por separado. Está planeado que la última parte se lleve el resto para que el total cuadre siempre.
+
+### Configuración junto al ejecutable
+
+**Decisión:** El programa busca `config/regla-settings.json` en la misma carpeta que `main.exe`, en vez de en la carpeta desde la que se lanza.
+
+**Motivos:**
+- Así es fácil de descargar y usar: basta con tener `main.exe` y `config/` juntos, se lance como se lance.
+- En fase de desarrollo, antes de la beta, es la opción más rápida; no me planteo cambiarla por ahora.
+
+**Contrapartidas:**
+- Si se mueve `main.exe`, hay que llevar la carpeta `config/` con él.
+- Depende de otra función de Windows (`GetModuleFileNameW`) para saber dónde está el ejecutable.
+
 ---
 ## Integraciones
 
