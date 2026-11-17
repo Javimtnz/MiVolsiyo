@@ -79,8 +79,9 @@ optional<long long> textoACentimos(const string& texto) {
         } else if (c >= '0' && c <= '9') {
             hayDigitos = true;
             if (decimales == -1) {
-                if (euros > 1000000000000LL) return nullopt; // evita desbordar long long
                 euros = euros * 10 + (c - '0');
+                // Tope para que salario × CIEN_POR_CIEN quepa en long long al repartir
+                if (euros > 99999999999LL) return nullopt;
             } else {
                 if (decimales == 2) return nullopt; // no existen fracciones de céntimo
                 centimos = centimos * 10 + (c - '0');
@@ -107,6 +108,25 @@ optional<long long> pedirSalarioEnCentimos() {
         if (centimos && *centimos > 0) return centimos;
         cout << "Importe no válido: usa solo números, hasta 2 decimales y mayor que 0." << endl;
     }
+}
+
+struct Reparto {
+    long long necesidades;
+    long long ocio;
+    long long ahorro;
+};
+
+// Reparte el salario (en céntimos) solo con enteros. Necesidades y Ocio se
+// redondean hacia abajo (la división entera de positivos trunca) y Ahorro se
+// lleva lo que sobra: así las tres partes suman exactamente el salario, los
+// céntimos sobrantes (0, 1 o 2) van a ahorro y ninguna parte sale negativa.
+// Requiere que los porcentajes ya se hayan validado para sumar CIEN_POR_CIEN.
+Reparto repartir(long long salario, long long pbNecesidades, long long pbOcio) {
+    Reparto r;
+    r.necesidades = salario * pbNecesidades / CIEN_POR_CIEN;
+    r.ocio        = salario * pbOcio / CIEN_POR_CIEN;
+    r.ahorro      = salario - r.necesidades - r.ocio;
+    return r;
 }
 
 // 117525 -> "1175.25"
@@ -166,16 +186,13 @@ int main(){
         return 1;
     }
 
-// 5. Repartir. El porcentaje es decimal, así que se redondea una sola vez
-//    al céntimo más cercano y a partir de ahí todo son enteros exactos.
-    long long A = llround(*salario * (*necesidades / double(CIEN_POR_CIEN)));
-    long long B = llround(*salario * (*ocio / double(CIEN_POR_CIEN)));
-    long long C = llround(*salario * (*ahorro / double(CIEN_POR_CIEN)));
+// 5. Repartir: las tres partes suman siempre exactamente el salario
+    Reparto reparto = repartir(*salario, *necesidades, *ocio);
 
 cout << "Así quedaría la regla: "
-     << "Necesidades: " << formatearEuros(A) << "€" << endl
-     << "Ocio: " << formatearEuros(B) << "€" << endl
-     << "Ahorro e inversión: " << formatearEuros(C) << "€" << endl;
+     << "Necesidades: " << formatearEuros(reparto.necesidades) << "€" << endl
+     << "Ocio: " << formatearEuros(reparto.ocio) << "€" << endl
+     << "Ahorro e inversión: " << formatearEuros(reparto.ahorro) << "€" << endl;
 
      return 0;
 }
