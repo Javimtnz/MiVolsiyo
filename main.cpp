@@ -6,10 +6,24 @@
 #include <string>
 #include <sstream>
 #include <cmath>   // para llround
+#include <filesystem>
 #include <windows.h>
 
 using namespace std;
 using json = nlohmann::json;
+namespace fs = std::filesystem;
+
+// Carpeta donde está main.exe. Una ruta relativa como "config/..." se resuelve
+// desde la carpeta en la que se lanza el programa, no desde la del .exe;
+// partiendo de aquí, config/ se encuentra se ejecute desde donde se ejecute.
+fs::path carpetaDelEjecutable() {
+    wchar_t ruta[MAX_PATH];
+    DWORD longitud = GetModuleFileNameW(nullptr, ruta, MAX_PATH);
+    if (longitud == 0 || longitud == MAX_PATH) {
+        return fs::current_path(); // falló o la ruta no cabía: volvemos al comportamiento antiguo
+    }
+    return fs::path(ruta).parent_path();
+}
 
 // Comprobamos la clave y el tipo antes de convertir, en vez de dejar que
 // nlohmann lance type_error: así el mensaje dice exactamente qué clave falla.
@@ -94,9 +108,11 @@ int main(){
      SetConsoleCP(CP_UTF8);
 
 // 1. Abrir el archivo
-    std::ifstream archivo("config/regla-settings.json");
+    fs::path rutaConfig = carpetaDelEjecutable() / "config" / "regla-settings.json";
+    std::ifstream archivo(rutaConfig);
     if (!archivo.is_open()) {
-        std::cerr << "Error: no se pudo abrir regla-settings.json" << std::endl;
+        // u8string() en vez de string(): la ruta puede tener tildes y la consola está en UTF-8
+        std::cerr << "Error: no se pudo abrir " << rutaConfig.u8string() << std::endl;
         return 1;
     }
 // 2. Parsear el contenido a un objeto json
