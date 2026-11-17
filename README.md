@@ -9,6 +9,8 @@
 
 - Calcula la distribución 50/30/20 (necesidades / Ocio / ahorro) a partir del salario mensual.
 - Se puede modificar la regla a tú gusto.
+- Acepta el salario con punto o coma decimal (`1175.25` o `1175,25`) y vuelve a preguntar si el importe no es válido.
+- Si la configuración tiene un error, explica cuál en vez de cerrarse sin más.
 ---
 ## Visión del proyecto
 
@@ -67,7 +69,7 @@ MiVolsiyo usa [nlohmann/json](https://github.com/nlohmann/json), que se puede de
 
 **Opción A:**
 
-Descargando el [`json.hpp`](https://github.com/nlohmann/json/releases/latest/download/json.hpp) y guardarlo **en la misma carpeta donde esta `main.cpp`**, que si vas a usar la librería en un solo proyecto o para que funcione este programa, es la más limpia. 
+Descargando el [`json.hpp`](https://github.com/nlohmann/json/releases/latest/download/json.hpp) y guardarlo en una carpeta **`nlohmann/` dentro de la carpeta del proyecto** (`MiVolsiyo/nlohmann/json.hpp`), que si vas a usar la librería en un solo proyecto o para que funcione este programa, es la más limpia. La carpeta `nlohmann/` hace falta porque el código lo incluye como `<nlohmann/json.hpp>`.
 
 **Opción B:**
 
@@ -96,20 +98,28 @@ Desde la carpeta del proyecto:
 g++ -std=c++17 main.cpp -o main.exe
 ```
 
+Si usaste la **opción A**, añade `-I.` para que el compilador busque también en la carpeta del proyecto:
+
+```bash
+g++ -std=c++17 -I. main.cpp -o main.exe
+```
+
 ### 5. Ejecutar
 
 ```bash
 ./main.exe
 ```
 
-Ejecútalo siempre desde la carpeta del proyecto para que encuentre la carpeta `config/`.
+El programa busca `config/regla-settings.json` junto a `main.exe`, así que funciona aunque lo lances desde otra carpeta. Si mueves `main.exe`, lleva la carpeta `config/` con él.
 
 >## Problemas frecuentes
 
 | Error                    | Causa probable                                         |    
 | ------------------------ | ------------------------------------------------------ | 
 | `g++: command not found` | No estás en el terminal **UCRT64**, o falta el paso 1. |
-| `json.hpp: No such file or directory` | El archivo no está en la misma carpeta que `main.cpp`. |
+| `nlohmann/json.hpp: No such file or directory` | Falta el paso 3: con la opción A, revisa que esté en `nlohmann/json.hpp` y que compilas con `-I.`. |
+| `Error: no se pudo abrir ...\config\regla-settings.json` | La carpeta `config/` no está junto a `main.exe`. El mensaje muestra la ruta donde la ha buscado. |
+| `Error: falta la clave "..."` / `debe ser un número` / `debe estar entre 0 y 1` | Hay un error en `config/regla-settings.json`; el mensaje dice qué clave corregir. |
 
 
 
@@ -121,21 +131,48 @@ Ejecútalo siempre desde la carpeta del proyecto para que encuentre la carpeta `
 **Decisión:** Los porcentajes de la regla 50/30/20 se leen desde un archivo `.json` al arrancar, en lugar de estar formando parte del código directamente.
 
 **Motivos:**
-- Cambiar cualquier cosa en C++ implica recompilar de nuevo el código, en cambio, con el `.json` cualquier persona puede entrar al archivo y modificarlo sin necesidad de compilar d e nuevo.
+- Cambiar cualquier cosa en C++ implica recompilar de nuevo el código, en cambio, con el `.json` cualquier persona puede entrar al archivo y modificarlo sin necesidad de compilar de nuevo.
 - Da cierto nivel de personalización para que los usuarios puedan adaptar la regla a sus necesidades. 
 - Separa lo que es la lógica del programa con parámetros de configuración que pueden variar.
 - Me da la base para poder ir añadiendo ajustes en un futuro.
-- `hlomann/json` me permite leer de manera sencilla un `.json` y no hace falta instalación, solo descargar el header.
+- `nlohmann/json` me permite leer de manera sencilla un `.json` y no hace falta instalación, solo descargar el header.
 
 **Contrapartidas:**
 - Un error en el `.json` y deja de funcionar el programa.
 - Archivo extra que suma al set que se ha de distribuir.
 - Tienes que tener una dependencia externa o sino no te funcionará el programa. 
 
+### Dinero en céntimos enteros en lugar de decimales
+
+**Decisión:** Los importes se guardan y se calculan en céntimos con números enteros (`1175,25 €` → `117525`) y solo se convierten a euros para mostrarlos.
+
+**Motivos:**
+- MiVolsiyo va a ser una app de finanzas personales: cualquier fallo en el cálculo, aunque sea de unos céntimos, obliga a mover cantidades ínfimas para cuadrar las cuentas, y eso hace perder el tiempo.
+
+**Contrapartidas:**
+- Hay que convertir el importe al leerlo y al mostrarlo.
+- Al repartir por porcentajes todavía se puede descuadrar 1 céntimo, porque cada parte se redondea por separado. Está planeado que la última parte se lleve el resto para que el total cuadre siempre.
+
+### Configuración junto al ejecutable
+
+**Decisión:** El programa busca `config/regla-settings.json` en la misma carpeta que `main.exe`, en vez de en la carpeta desde la que se lanza.
+
+**Motivos:**
+- Así es fácil de descargar y usar: basta con tener `main.exe` y `config/` juntos, se lance como se lance.
+- En fase de desarrollo, antes de la beta, es la opción más rápida; no me planteo cambiarla por ahora.
+
+**Contrapartidas:**
+- Si se mueve `main.exe`, hay que llevar la carpeta `config/` con él.
+- Depende de otra función de Windows (`GetModuleFileNameW`) para saber dónde está el ejecutable.
+
 ---
 ## Integraciones
 
 | Include          | Tipo                                                                     | Notas                                                                                  |
 | ---------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
-| `<windows.h>`    | SDK de Windows (siempre presente en Windows)                             | Windows-only                                                                           |
-| `<nlohman/json>` | Librería de terceros ([nlohmann/json](https://github.com/nlohmann/json)) | Header-only; no incluida en el repo, hay que descargarla manualmente antes de compilar |
+| `<windows.h>`    | SDK de Windows (siempre presente en Windows)                             | Windows-only. Pone la consola en UTF-8 y localiza la carpeta de `main.exe` (`GetModuleFileNameW`) |
+| `<nlohmann/json.hpp>` | Librería de terceros ([nlohmann/json](https://github.com/nlohmann/json)) | Header-only; no incluida en el repo, hay que descargarla manualmente antes de compilar |
+
+---
+
+Este proyecto se desarrolla con ayuda de [Claude Code](https://claude.com/claude-code).

@@ -2,6 +2,18 @@ Todos los cambios relevantes de MiVolsiyo se documentan en este archivo. El form
 
 ## [Sin publicar] — Fecha
 
+### Cambiado
+
+- El salario acepta punto o coma decimal (`1175.25` o `1175,25`) y vuelve a preguntar si el importe no es válido.
+- Los importes se calculan en céntimos enteros en lugar de `double`, para que el dinero sea exacto.
+- `config/regla-settings.json` se busca junto al ejecutable, así que el programa funciona aunque se lance desde otra carpeta.
+
+### Corregido
+
+- Una clave ausente o con texto en lugar de número en `regla-settings.json` cerraba el programa con una excepción sin capturar; ahora se explica qué clave falla. También se rechazan porcentajes fuera de 0–1, números que desbordan (`1e400`), texto sobrante tras el JSON y un JSON que no sea un objeto.
+- Escribir letras o una coma en el salario hacía que se calculara con 0 o con el número truncado sin avisar.
+- Errata "invesión" en la salida.
+
 ### Planeado
 
 - Validar que los porcentajes de la regla sumen 100 antes de continuar.
