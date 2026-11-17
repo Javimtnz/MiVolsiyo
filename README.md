@@ -151,7 +151,7 @@ El programa busca `config/regla-settings.json` junto a `main.exe`, así que func
 
 **Contrapartidas:**
 - Hay que convertir el importe al leerlo y al mostrarlo.
-- Al repartir por porcentajes todavía se puede descuadrar 1 céntimo, porque cada parte se redondea por separado. Está planeado que la última parte se lleve el resto para que el total cuadre siempre.
+- Al repartir por porcentajes el total cuadra siempre, pero a costa de que Necesidades y Ocio se redondeen hacia abajo y Ahorro se lleve los céntimos sobrantes (como mucho 2).
 
 ### Configuración junto al ejecutable
 

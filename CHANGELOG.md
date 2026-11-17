@@ -7,6 +7,10 @@ Todos los cambios relevantes de MiVolsiyo se documentan en este archivo. El form
 - El salario acepta punto o coma decimal (`1175.25` o `1175,25`) y vuelve a preguntar si el importe no es válido.
 - Los importes se calculan en céntimos enteros en lugar de `double`, para que el dinero sea exacto.
 - `config/regla-settings.json` se busca junto al ejecutable, así que el programa funciona aunque se lance desde otra carpeta.
+- Los porcentajes de la regla deben sumar 100 %; si no, el programa indica cuánto suman y se detiene.
+- Los porcentajes admiten como mucho 4 decimales (`0.1234` = 12,34 %).
+- El reparto cuadra siempre al céntimo: Necesidades y Ocio se redondean hacia abajo y Ahorro se lleva los céntimos sobrantes.
+- El salario máximo admitido es 99 999 999 999,99 €.
 
 ### Corregido
 
@@ -16,7 +20,6 @@ Todos los cambios relevantes de MiVolsiyo se documentan en este archivo. El form
 
 ### Planeado
 
-- Validar que los porcentajes de la regla sumen 100 antes de continuar.
 - Almacenar el salario mensual localmente.
 - Registrar carteras de inversión.
 - Llevar seguimiento de activos y pasivos.
